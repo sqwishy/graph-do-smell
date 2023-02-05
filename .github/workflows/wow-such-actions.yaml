@@ -1,0 +1,34 @@
+on: push
+
+jobs:
+  meme:
+    runs-on: self-hosted
+    env:
+      XDG_DATA_HOME: /home/ghrunner/cache/xdg
+      # CARGO_HOME: /home/ghrunner/cache/cargo
+    steps:
+      - uses: actions/checkout@v3
+      - run: |
+          ncat -U /run/lvm-cache-friend/socket <<EOF
+          mount /home/ghrunner/cache
+          > linux ${{ hashFiles('Cargo.lock','Cargo.toml') }}
+          > linux ${{ github.ref_name }}
+          < linux ${{ github.ref_name }} ${{ hashFiles('Cargo.lock','Cargo.toml') }}
+          EOF
+      # tag the build phase, this seems to help podman system prune not to
+      # remove its layers so they can be cached
+      - run: podman build -t graph-do-smell-build --target build .
+      - run: podman build -t graph-do-smell .
+      - run: |
+          podman run --rm graph-do-smell '{
+            get(url: "https://froghat.ca") {
+              select(select: "li:not(.delimiter)") {
+                title: select(select: "a.title") { text href: attr(attr: "href") }
+                time: select(select: "time") { datetime: attr(attr: "datetime") }
+              }
+            }
+          }' | jq -c '.get.select[] | [.time[].datetime, .title[].text, .title[].href]' >> $GITHUB_STEP_SUMMARY
+      - run: podman system prune -f
+      - run: echo 🆒 🫘 >> $GITHUB_STEP_SUMMARY
+      # - run: sudo umount /home/ghrunner/cache
+      #   if: ${{ always() }}

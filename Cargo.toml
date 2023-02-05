@@ -1,0 +1,20 @@
+[package]
+name = "graph-do-smell"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "graph-do-smell"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = "1"
+async-graphql = "5"
+
+serde = "1"
+serde_json = "1"
+
+ureq     = "2"
+kuchiki  = "0"
+nipper = { git = "https://github.com/sqwishy/nipper", rev = "15f5a21e5b657d136abcdd195d9d2887c1ffaa33" }
+extreme = "666.666.666666"

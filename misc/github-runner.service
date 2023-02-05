@@ -1,0 +1,19 @@
+[Unit]
+Description=GitHub Actions Runner
+After=network-online.target
+OnSuccess=poweroff.target
+
+[Service]
+Type=simple
+ExecStartPre=/home/ghrunner/get-token-and-config.sh --unattended --disableupdate --ephemeral --name dingus --replace
+ExecStart=/home/ghrunner/bin/runsvc.sh
+ExecStopPost=-/home/ghrunner/unconfig.sh
+User=ghrunner
+WorkingDirectory=/home/ghrunner
+KillMode=process
+TimeoutStopSec=5min
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
