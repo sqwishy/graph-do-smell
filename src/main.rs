@@ -30,14 +30,15 @@ impl Node {
         f(node)
     }
 
-    fn attr(&self, attr: &str) -> Option<StrTendril> {
+    fn attr(&self, attr: &str) -> Option<String> {
         self.with_node(|node| node.attr(attr))
+            .as_ref()
+            .map(StrTendril::to_string)
     }
 }
 
 #[async_graphql::Object]
 impl Node {
-    #[graphql(name = "this_text")]
     async fn this_text(&self) -> Option<String> {
         let document = self.document.lock().unwrap();
         let node = document.node(self.id);
@@ -45,14 +46,16 @@ impl Node {
     }
 
     #[graphql(name = "attr")]
-    async fn meme(&self, attr: String) -> Option<String> {
-        self.attr(&attr).as_ref().map(StrTendril::to_string)
+    async fn attr_(&self, attr: String) -> Option<String> {
+        self.attr(&attr)
+    }
+
+    async fn href(&self) -> Option<String> {
+        self.attr("href")
     }
 
     async fn class(&self) -> Vec<String> {
         self.attr("class")
-            .as_ref()
-            .map(StrTendril::to_string)
             .map(|s| s.split_ascii_whitespace().map(ToOwned::to_owned).collect())
             .unwrap_or_default()
     }

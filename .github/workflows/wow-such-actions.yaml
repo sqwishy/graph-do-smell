@@ -23,7 +23,7 @@ jobs:
           podman run --rm graph-do-smell '{
             get(url: "https://froghat.ca") {
               select(select: "li:not(.delimiter)") {
-                title: select(select: "a.title") { text href: attr(attr: "href") }
+                title: select(select: "a.title") { text href }
                 time: select(select: "time") { datetime: attr(attr: "datetime") }
               }
             }
