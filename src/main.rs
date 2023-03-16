@@ -1,6 +1,28 @@
 use anyhow::Context;
+use async_graphql::{InputValueError, Value};
 use nipper::{Document, MatchScope, Matcher, Matches, StrTendril};
 use std::sync::{Arc, Mutex};
+
+struct Selector(Matcher, String);
+
+#[async_graphql::Scalar]
+impl async_graphql::ScalarType for Selector {
+    fn parse(value: Value) -> Result<Self, InputValueError<Self>> {
+        if let Value::String(s) = value {
+            Matcher::new(&s)
+                .ok(/* don't know how to format cssparser::ParseError */)
+                .context("invalid css selection string")
+                .map_err(InputValueError::custom)
+                .map(|m| Selector(m, s))
+        } else {
+            Err(InputValueError::custom("expected css selection string"))
+        }
+    }
+
+    fn to_value(&self) -> Value {
+        Value::String(self.1.clone())
+    }
+}
 
 struct Query;
 
@@ -80,11 +102,8 @@ impl Node {
             .unwrap_or_default()
     }
 
-    async fn select(&self, select: String) -> anyhow::Result<Vec<Node>> {
-        let mut matcher = Matcher::new(&select)
-            .ok()
-            .context("invalid css selection")?;
-
+    async fn select(&self, select: Selector) -> anyhow::Result<Vec<Node>> {
+        let Selector(mut matcher, _) = select;
         matcher.scope = Some(self.id);
 
         let document = self.document.lock().unwrap();
