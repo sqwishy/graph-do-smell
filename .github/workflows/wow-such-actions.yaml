@@ -23,11 +23,11 @@ jobs:
           podman run --rm graph-do-smell '{
             get(url: "https://froghat.ca") {
               select(select: "li:not(.delimiter)") {
-                title: select(select: "a.title") { text href }
-                time: select(select: "time") { datetime: attr(attr: "datetime") }
+                title: querySelector(select: "a.title") { text href }
+                time: querySelector(select: "time") { datetime: attr(attr: "datetime") }
               }
             }
-          }' | jq -c '.get.select[] | [.time[].datetime, .title[].text, .title[].href]' >> $GITHUB_STEP_SUMMARY
+          }' | jq -c '.get.select[] | [.time.datetime, .title.text, .title.href]' >> $GITHUB_STEP_SUMMARY
       - run: podman system prune -f
       - run: echo 🆒 🫘 >> $GITHUB_STEP_SUMMARY
       # - run: sudo umount /home/ghrunner/cache

@@ -102,19 +102,32 @@ impl Node {
             .unwrap_or_default()
     }
 
-    async fn select(&self, select: Selector) -> anyhow::Result<Vec<Node>> {
+    async fn select(&self, select: Selector) -> Vec<Node> {
         let Selector(mut matcher, _) = select;
         matcher.scope = Some(self.id);
 
-        let document = self.document.lock().unwrap();
-        let node = document.node(self.id);
+        self.with_node(|node| {
+            Matches::from_one(node, matcher, MatchScope::IncludeNode)
+                .map(move |matched| Node {
+                    document: Arc::clone(&self.document),
+                    id: matched.id,
+                })
+                .collect()
+        })
+    }
 
-        Ok(Matches::from_one(node, matcher, MatchScope::IncludeNode)
-            .map(|node| Node {
-                document: Arc::clone(&self.document),
-                id: node.id,
-            })
-            .collect::<Vec<_>>())
+    async fn query_selector(&self, select: Selector) -> Option<Node> {
+        let Selector(mut matcher, _) = select;
+        matcher.scope = Some(self.id);
+
+        self.with_node(|node| {
+            Matches::from_one(node, matcher, MatchScope::IncludeNode)
+                .map(move |matched| Node {
+                    document: Arc::clone(&self.document),
+                    id: matched.id,
+                })
+                .next()
+        })
     }
 }
 
