@@ -11,6 +11,7 @@ jobs:
       - run: |
           ncat -U /run/lvm-cache-friend/socket <<EOF
           mount /home/ghrunner/cache
+          > linux ${{ github.ref_name }} ${{ hashFiles('Cargo.lock','Cargo.toml') }}
           > linux ${{ hashFiles('Cargo.lock','Cargo.toml') }}
           > linux ${{ github.ref_name }}
           < linux ${{ github.ref_name }} ${{ hashFiles('Cargo.lock','Cargo.toml') }}
