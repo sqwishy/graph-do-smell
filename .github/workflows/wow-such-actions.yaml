@@ -28,6 +28,10 @@ jobs:
               }
             }
           }' | jq -c '.get.select[] | [.time.datetime, .title.text, .title.href]' >> $GITHUB_STEP_SUMMARY
+      # for no particular reason, podman system prune will sometimes fail to
+      # remove containers because they are "external"; it seems like we can
+      # only remove them with buildah ...
+      - run: buildah rm -a
       - run: podman system prune -f
       - run: echo 🆒 🫘 >> $GITHUB_STEP_SUMMARY
       # - run: sudo umount /home/ghrunner/cache

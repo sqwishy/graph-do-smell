@@ -11,7 +11,7 @@ FROM opensuse/tumbleweed
 # > systemd-network
 # for systemd-networkd systemd-resolved; for the machine to behave when boot
 # under systemd-nspawn
-RUN zypper in -y --no-recommends tar gzip lttng-ust libopenssl1_1 krb5 zlib libicu systemd-network podman jq ncat sudo
+RUN zypper in -y --no-recommends tar gzip lttng-ust libopenssl1_1 krb5 zlib libicu systemd-network podman buildah jq ncat sudo
 
 COPY ./github-runner.service /etc/systemd/system/github-runner.service
 
